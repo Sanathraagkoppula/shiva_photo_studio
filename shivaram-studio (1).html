@@ -551,19 +551,22 @@ const BLUR_Z  = [ 0.8,    0,    0,    0,    0,    0,    0,    0]; // depth of fi
 // Leave it empty ("") to keep the placeholder. Positions, sizes and angles are locked:
 // your photo is cropped to fill the frame, so the layout never shifts.
 const HERO_PHOTOS = {
-  portrait: "",   // top centre, tall card behind the camera
-  mountain: "",   // top left
-  city:     "",   // top right, tall card
-  shore:    "",   // middle right
-  mid:      "",   // middle left, next to the camera
-  leaf:     "",   // lower left
-  ocean:    "",   // bottom centre
-  figure:   ""    // bottom right, largest card
+  portrait: "imgs/all_portrait/home_imgs/01.jpg",   // top centre, tall card behind the camera
+  mountain: "imgs/all_portrait/home_imgs/02.jpg",   // top left
+  city:     "imgs/all_portrait/home_imgs/03.jpg",   // top right, tall card
+  shore:    "imgs/all_portrait/home_imgs/04.jpg",   // middle right
+  leaf:     "imgs/all_portrait/home_imgs/05.jpg",   // lower left
+  ocean:    "imgs/all_portrait/home_imgs/06.jpg",   // bottom centre
+  figure:   "imgs/all_portrait/home_imgs/07.jpg",   // bottom right, largest card
+  mid:      "imgs/all_portrait/home_imgs/08.jpg"    // middle left, next to the camera
 };
 // ─────────────────────────────────────────────────────────────
 document.querySelectorAll(".layer.photo").forEach(el => {
   const own = HERO_PHOTOS[el.dataset.k], p = PHOTOS[+el.dataset.p];
-  if (own) el.src = own; else if (p) el.src = p.src;
+  if (own) {
+    el.onerror = () => { el.onerror = null; if (p) el.src = p.src; };   // missing file → placeholder
+    el.src = own;
+  } else if (p) el.src = p.src;
 });
 
 const photos = [...document.querySelectorAll(".layer.photo")].map((el, i) => {
