@@ -225,6 +225,17 @@ select option{background:var(--ink-2)}
 textarea{resize:vertical;min-height:110px}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--amber)}
 .note{font-size:14px;color:var(--amber);min-height:1.4em}
+.studio{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(36px,6vw,90px);align-items:center;margin-top:clamp(56px,8vw,110px);padding-top:clamp(48px,6vw,80px);border-top:1px solid var(--line)}
+.studio h3{font-family:var(--display);font-weight:400;font-size:clamp(28px,3.4vw,42px);line-height:1.1;margin:0 0 18px}
+.studio h3 em{color:var(--amber)}
+.studio p{color:var(--mute);max-width:42ch;margin:0 0 28px}
+.studio .info{margin-top:0;margin-bottom:32px}
+.map{position:relative;aspect-ratio:16/10;border:1px solid var(--line);background:var(--ink);overflow:hidden;box-shadow:0 30px 60px -30px rgba(0,0,0,.8)}
+.map iframe{position:absolute;inset:0;width:100%;height:100%;border:0;filter:invert(.92) hue-rotate(180deg) saturate(.55) brightness(.95) contrast(.95)}
+.map::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(232,163,90,.18),inset 0 0 80px rgba(0,0,0,.35)}
+.map-tag{position:absolute;left:14px;top:14px;z-index:1;font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--paper);background:rgba(14,11,9,.82);border:1px solid var(--line);padding:6px 10px;pointer-events:none}
+.map-tag::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--amber);margin-right:8px;vertical-align:1px}
+@media (max-width:860px){.studio{grid-template-columns:1fr}.map{aspect-ratio:4/3}}
 
 footer{border-top:1px solid var(--line);padding-block:32px}
 .foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-weight:500;font-size:11.5px;letter-spacing:.12em;color:var(--mute);text-transform:uppercase}
@@ -476,6 +487,25 @@ footer{border-top:1px solid var(--line);padding-block:32px}
           <p class="note" id="note" role="status"></p>
         </div>
       </form>
+    </div>
+
+    <!-- STUDIO + MAP -->
+    <div class="wrap studio reveal">
+      <div>
+        <span class="eyebrow" style="display:block;margin-bottom:18px">Find the studio</span>
+        <h3>Based in <em>Hyderabad</em>, ready to travel.</h3>
+        <p>Drop by for a consult, or tell me where the story is and I’ll come to you.</p>
+        <div class="info">
+          <div><small>Studio</small><span>Hyderabad, Telangana</span></div>
+          <div><small>Hours</small><span>Mon – Sat · 10 am – 7 pm</span></div>
+        </div>
+        <a class="btn" href="https://maps.app.goo.gl/FXGsvoxbmDzEgbBAA" target="_blank" rel="noopener">Get directions <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="map">
+        <span class="map-tag">Shiva Ram Studio</span>
+        <!-- MAP LOCATION: replace the text after q= with your coordinates, e.g. q=17.4065,78.4772 -->
+        <iframe src="https://maps.google.com/maps?q=Hyderabad%2C%20Telangana&amp;z=14&amp;output=embed" title="Studio location on Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+      </div>
     </div>
   </section>
 </main>
