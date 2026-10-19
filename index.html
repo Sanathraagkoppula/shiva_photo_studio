@@ -778,26 +778,38 @@ cats.forEach(c => {
   // x: 0 = person's left edge, 100 = right edge · y: 0 = top of head, 100 = feet.
   // ───────────────────────────────────────────────────────────
   const SVC = [
-    {k:"photoshoot", label:"Photoshoot", tag:"Half day · 4 hrs", title:"Portrait photoshoot", type:"Portrait session",
+    {k:"Cinematic Video", label:"Cinematic Video", tag:"Half day · 4 hrs", title:"Portrait photoshoot", type:"Portrait session",
      desc:"For individuals, artists and founders who need images that feel like them.",
      list:["1 to 2 locations","40+ edited photographs","Wardrobe and posing guidance","Delivery in 7 days"],
      price:"₹12,000", small:"Starting at", tx:40, ty:70, x:19.4, y:12.5},
-    {k:"reel", label:"Reel shoot", tag:"Short-form video", title:"Reel shoot", type:"Reel shoot",
+    {k:"Candid Photos", label:"Candid Photos", tag:"Short-form video", title:"Candid Photos", type:"Candid Photos",
      desc:"Vertical video for Instagram and YouTube Shorts, planned around your story and shot in the best light.",
      list:["Concept and shot list","Vertical 9:16 edits","Colour grade and music sync","Raw clips on request"],
      price:"On request", small:"Quoted per project", tx:40, ty:150, x:10.1, y:21.6},
-    {k:"brand", label:"Brand story", tag:"Full day · 8 hrs", title:"Brand story", type:"Brand story",
+    {k:"Portraits", label:"Portraits", tag:"Full day · 8 hrs", title:"Portraits", type:"Portraits",
      desc:"Campaign, product and behind-the-scenes imagery for your website and social channels.",
      list:["Creative brief and shot list","120+ edited photographs","Commercial usage licence","Web and print exports"],
      price:"₹35,000", small:"Starting at", tx:40, ty:230, x:26.0, y:37.2},
-    {k:"events", label:"Events & travel", tag:"Custom · Multi-day", title:"Events & travel", type:"Event or wedding",
+    {k:"Reel Shoots", label:"Reel Shoots", tag:"Custom · Multi-day", title:"Reel Shoots", type:"Reel Shoots",
      desc:"Weddings, festivals and destination work, documented as it happens.",
      list:["Second shooter available","Full coverage timeline","Printed album option","Sneak peek in 48 hrs"],
      price:"On request", small:"Quoted per project", tx:40, ty:310, x:11.9, y:55.2},
-    {k:"drone", label:"Drone shoot", tag:"Aerial · Photo & video", title:"Drone shoot", type:"Drone shoot",
+    {k:"Drone", label:"Drone shoot", tag:"Aerial · Photo & video", title:"Drone shoot", type:"Drone shoot",
      desc:"Aerial photos and video for weddings, events, real estate and travel.",
      list:["4K aerial video","High-res aerial photographs","Edited highlight clip","Licensed, safe flying"],
-     price:"On request", small:"Quoted per project", tx:40, ty:390, x:40.3, y:74.4}
+     price:"On request", small:"Quoted per project", tx:40, ty:390, x:40.3, y:74.4},
+     {k:"LED Screens", label:"LED Screens", tag:"Aerial · Photo & video", title:"LED Screens", type:"LED Screens",
+     desc:"Aerial photos and video for weddings, events, real estate and travel.",
+     list:["4K aerial video","High-res aerial photographs","Edited highlight clip","Licensed, safe flying"],
+     price:"On request", small:"Quoted per project", tx:40, ty:470, x:40.3, y:74.4},
+    {k:"Traditional photo", label:"Traditional photo", tag:"Aerial · Photo & video", title:"Traditional photo", type:"Traditional photo",
+     desc:"Aerial photos and video for weddings, events, real estate and travel.",
+     list:["4K aerial video","High-res aerial photographs","Edited highlight clip","Licensed, safe flying"],
+     price:"On request", small:"Quoted per project", tx:40, ty:550, x:40.3, y:74.4},
+     {k:"Traditional video", label:"Traditional video", tag:"Aerial · Photo & video", title:"Traditional video", type:"Traditional video",
+     desc:"Aerial photos and video for weddings, events, real estate and travel.",
+     list:["4K aerial video","High-res aerial photographs","Edited highlight clip","Licensed, safe flying"],
+     price:"On request", small:"Quoted per project", tx:40, ty:630, x:40.3, y:74.4}
   ];
   const tags = $("#svcTags"), lines = $("#svcLines"), panel = $("#svcPanel");
   if (!tags) return;
