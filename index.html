@@ -554,18 +554,29 @@ footer{border-top:1px solid var(--line);padding-block:32px}
 <script>
 document.documentElement.classList.add("js");
 
-const PHOTOS = [
-  {src:"imgs/candid_imgs/01.jpg", title:"Above the cloud line", cat:"Marriage", place:"Himalayas", exif:"ƒ/8 · 1/320s · ISO 100 · 24mm", ar:"4/3"},
-  {src:"imgs/events/01.jpg", title:"Old town, after rain", cat:"Events", place:"Europe", exif:"ƒ/2.8 · 1/125s · ISO 400 · 35mm", ar:"3/5"},
-  {src:"", title:"Waiting for the sun", cat:"Portrait", place:"Goa", exif:"ƒ/2 · 1/500s · ISO 100 · 50mm", ar:"2/1"},
-  {src:"", title:"New growth", cat:"Nature", place:"Coorg", exif:"ƒ/2.8 · 1/200s · ISO 200 · 100mm", ar:"4/3"},
-  {src:"", title:"Last light on the water", cat:"Landscape", place:"Gokarna", exif:"ƒ/11 · 1/60s · ISO 100 · 70mm", ar:"1/1"},
-  {src:"imgs/candid_imgs/02.jpg", title:"Quiet study", cat:"Portrait", place:"Hyderabad", exif:"ƒ/1.4 · 1/160s · ISO 800 · 85mm", ar:"1/1"},
-  {src:"", title:"Window light", cat:"Portrait", place:"Studio", exif:"ƒ/1.8 · 1/100s · ISO 640 · 50mm", ar:"6/5"}
-];
-
 const $ = s => document.querySelector(s);
-const pad = n => String(n).padStart(2,"0");
+const pad = n => String(n).padStart(2, "0");
+
+// ─── GALLERY PHOTOS ─────────────────────────────────────────
+// Entries with an empty src are skipped automatically.
+// title / place / exif / ar are optional; sensible defaults are filled in.
+const RAW_PHOTOS = [
+  {src:"imgs/candid_imgs/01.jpg", cat:"Marriage", title:"First look"},
+  {src:"imgs/events/01.jpg",      cat:"Events",   title:"Stage lights"},
+  {src:"imgs/portraits/02.jpg",   cat:"Portrait", title:"Window light"},
+  {src:"",                        cat:"Nature"},
+  {src:"",                        cat:"Landscape"},
+  {src:"imgs/candid_imgs/02.jpg", cat:"Portrait", title:"Between frames"},
+  {src:"imgs/portraits/03.jpg",   cat:"Portrait", title:"Golden hour"}
+];
+const PHOTOS = RAW_PHOTOS.filter(p => p.src).map((p, i) => ({
+  title: p.title || `${p.cat} ${pad(i + 1)}`,
+  place: p.place || "Warangal, Telangana",
+  exif:  p.exif  || "",
+  ar:    p.ar    || "",
+  ...p
+}));
+// ─────────────────────────────────────────────────────────────
 
 const nav = $("#nav");
 const hero = $("#hero");
@@ -582,46 +593,47 @@ document.querySelectorAll("#links a").forEach(a => a.addEventListener("click", (
   $("#burger").setAttribute("aria-expanded", false);
 }));
 
-
-const scene = $("#scene"), cam = $("#cam"), full = $("#full"), glow = $("#glow"), shade = $("#shade"), hint = $("#hint"), copyEl = document.querySelector(".hero-copy"), frameNo = $("#frameNo");
+/* ─── HERO ─────────────────────────────────────────────────── */
+const scene = $("#scene"), cam = $("#cam"), full = $("#full"), glow = $("#glow"), shade = $("#shade"),
+      hint = $("#hint"), copyEl = document.querySelector(".hero-copy"), frameNo = $("#frameNo");
 if (scene) {
   scene.style.perspective = "none";
   scene.style.transformStyle = "flat";
 }
+const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const easeBack = t => { const c = 1.9; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
 const easeOut = t => 1 - Math.pow(1 - t, 3);
 const ORIGIN = {x: 790, y: 455};
 
-// Order: portrait(top-centre), mountain(top-left), city(top-right), shore(mid-right), leaf(left), ocean(bottom-centre), figure(bottom-right)
-const TILT_X  = [  12,  -10,   12,   -6,  -12,   14,   10,    8]; // pitch (X)
-const TILT_Y  = [  -4,   12,  -14,  -12,   18,  -10,    6,   14]; // yaw (Y)
-const SPIN    = [   4,   14,  -20,   13,   22,   10,  -14,   -9]; // roll (Z)
-const SIZE    = [ .78,  .84,  .80,  .82,  .84,  .84,  .90,  .84]; // depth via scale
-const STACK   = [ -19,    4,    5,    3,    4,    6,    7,    2]; // front-to-back order
-const BLUR_Z  = [ 0.8,    0,    0,    0,    0,    0,    0,    0]; // depth of field blur
+const TILT_X = [  12, -10,  12,  -6, -12,  14,  10,   8];
+const TILT_Y = [  -4,  12, -14, -12,  18, -10,   6,  14];
+const SPIN   = [   4,  14, -20,  13,  22,  10, -14,  -9];
+const SIZE   = [ .78, .84, .80, .82, .84, .84, .90, .84];
+const STACK  = [ -19,   4,   5,   3,   4,   6,   7,   2];
+const BLUR_Z = [ 0.8,   0,   0,   0,   0,   0,   0,   0];
 
 // ─── HERO PHOTOS ─────────────────────────────────────────────
-// Put your own image path (or URL) between the quotes to replace a placeholder.
-// Leave it empty ("") to keep the placeholder. Positions, sizes and angles are locked:
-// your photo is cropped to fill the frame, so the layout never shifts.
+// Your own image path for each card. Leave "" to fall back to a gallery photo.
 const HERO_PHOTOS = {
-  portrait: "imgs/all_portrait/home_imgs/01.jpg",   // top centre, tall card behind the camera
-  mountain: "imgs/all_portrait/home_imgs/02.jpg",   // top left
-  city:     "imgs/all_portrait/home_imgs/03.jpg",   // top right, tall card
-  shore:    "imgs/all_portrait/home_imgs/04.jpg",   // middle right
-  leaf:     "imgs/all_portrait/home_imgs/05.jpg",   // lower left
-  ocean:    "imgs/all_portrait/home_imgs/06.jpg",   // bottom centre
-  figure:   "imgs/all_portrait/home_imgs/07.jpg",   // bottom right, largest card
-  mid:      "imgs/all_portrait/home_imgs/08.jpg"    // middle left, next to the camera
+  portrait: "imgs/all_portrait/home_imgs/01.jpg",
+  mountain: "imgs/all_portrait/home_imgs/02.jpg",
+  city:     "imgs/all_portrait/home_imgs/03.jpg",
+  shore:    "imgs/all_portrait/home_imgs/04.jpg",
+  leaf:     "imgs/all_portrait/home_imgs/05.jpg",
+  ocean:    "imgs/all_portrait/home_imgs/06.jpg",
+  figure:   "imgs/all_portrait/home_imgs/07.jpg",
+  mid:      "imgs/all_portrait/home_imgs/08.jpg"
 };
 // ─────────────────────────────────────────────────────────────
+const fallbackPhoto = idx => PHOTOS.length ? PHOTOS[idx % PHOTOS.length].src : "";
 document.querySelectorAll(".layer.photo").forEach(el => {
-  const own = HERO_PHOTOS[el.dataset.k], p = PHOTOS[+el.dataset.p];
+  const own = HERO_PHOTOS[el.dataset.k];
+  const fb = fallbackPhoto(+el.dataset.p || 0);
   if (own) {
-    el.onerror = () => { el.onerror = null; if (p) el.src = p.src; };   // missing file → placeholder
+    el.onerror = () => { el.onerror = null; if (fb) el.src = fb; else el.style.visibility = "hidden"; };
     el.src = own;
-  } else if (p) el.src = p.src;
+  } else if (fb) el.src = fb;
 });
 
 const photos = [...document.querySelectorAll(".layer.photo")].map((el, i) => {
@@ -629,10 +641,18 @@ const photos = [...document.querySelectorAll(".layer.photo")].map((el, i) => {
   const x = +s.getPropertyValue("--x"), y = +s.getPropertyValue("--y"), w = +s.getPropertyValue("--w");
   el.style.transformStyle = "preserve-3d";
   el.style.backfaceVisibility = "hidden";
-  return {el, i, cx: x + w / 2, cy: y + (el.offsetHeight / el.offsetWidth * w) / 2, w};
+  const ratio = el.offsetWidth ? el.offsetHeight / el.offsetWidth : 1;
+  return {el, i, x, y, w, cx: x + w / 2, cy: y + ratio * w / 2};
 });
-photos.forEach(p => p.el.decode?.().then(() => { p.cy = +p.el.style.getPropertyValue("--y") + (p.el.offsetHeight / p.el.offsetWidth * p.w) / 2; render(); }).catch(() => {}));
-const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const remeasure = ph => {
+  if (!ph.el.offsetWidth) return;
+  ph.cy = ph.y + (ph.el.offsetHeight / ph.el.offsetWidth * ph.w) / 2;
+};
+photos.forEach(ph => {
+  const done = () => { remeasure(ph); render(); };
+  if (ph.el.decode) ph.el.decode().then(done).catch(() => {});
+  else ph.el.addEventListener("load", done, {once:true});
+});
 if (still) hero.style.height = "100vh";
 
 function render(){
@@ -645,24 +665,19 @@ function render(){
   cam.style.transform = `scale(${1.2 - .2 * c0 - kick * .03})`;
   let shown = 0;
   photos.forEach(ph => {
+    const i = ph.i % TILT_X.length;
     const t = clamp((p - (.15 + ph.i * .06)) / .24);
     const e = easeBack(t);
     const dx = (ORIGIN.x - ph.cx) * (1 - e) * k, dy = (ORIGIN.y - ph.cy) * (1 - e) * k;
-    const progress = clamp(e, 0, 1.25);
-    const rx = TILT_X[ph.i] * progress;
-    const ry = TILT_Y[ph.i] * progress;
-    const rz = SPIN[ph.i] * (0.35 + 0.65 * progress);
-    const scale = (.1 + .9 * e) * SIZE[ph.i];
-    const blur = BLUR_Z[ph.i] * clamp(e, 0, 1);
+    const prog = clamp(e, 0, 1.25);
+    const rx = TILT_X[i] * prog, ry = TILT_Y[i] * prog, rz = SPIN[i] * (0.35 + 0.65 * prog);
+    const scale = (.1 + .9 * e) * SIZE[i];
+    const blur = BLUR_Z[i] * clamp(e);
     ph.el.style.opacity = clamp(t * 5).toFixed(3);
     ph.el.style.transform = `translate(${dx}px,${dy}px) perspective(1100px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${scale})`;
-    ph.el.style.zIndex = t < 1 ? 2 : (20 + STACK[ph.i]);
-    const shadowY = Math.round(14 + 10 * SIZE[ph.i] * clamp(e, 0, 1));
-    const shadowBlur = Math.round(22 + 16 * SIZE[ph.i] * clamp(e, 0, 1));
-    const filterParts = [];
-    if (blur > 0.1) filterParts.push(`blur(${blur.toFixed(1)}px)`);
-    filterParts.push(`drop-shadow(0 ${shadowY}px ${shadowBlur}px rgba(0,0,0,0.72))`);
-    ph.el.style.filter = filterParts.join(' ');
+    ph.el.style.zIndex = t < 1 ? 2 : (20 + STACK[i]);
+    const sy = Math.round(14 + 10 * SIZE[i] * clamp(e)), sb = Math.round(22 + 16 * SIZE[i] * clamp(e));
+    ph.el.style.filter = (blur > .1 ? `blur(${blur.toFixed(1)}px) ` : "") + `drop-shadow(0 ${sy}px ${sb}px rgba(0,0,0,.72))`;
     if (t > .5) shown++;
   });
   frameNo.textContent = pad(shown);
@@ -681,108 +696,63 @@ addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimat
 addEventListener("resize", render);
 render();
 
+/* ─── GALLERY ──────────────────────────────────────────────── */
 const grid = $("#grid");
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+
 PHOTOS.forEach((p, i) => {
-  const f = document.createElement("figure");
-  f.className = "shot";
+  const f = el("figure", "shot");
   f.tabIndex = 0;
   f.dataset.cat = p.cat;
   f.dataset.i = i;
-  f.style.setProperty("--ar", p.ar);
-  f.innerHTML = `<img src="${p.src}" alt="${p.title}, ${p.place}" loading="lazy"><figcaption><div><h3>${p.title}</h3><small>${p.exif}</small></div><span class="no">${p.cat.toUpperCase()} · ${pad(i+1)}</span></figcaption>`;
+  if (p.ar) f.style.setProperty("--ar", p.ar);
+
+  const img = el("img");
+  img.src = p.src;
+  img.alt = `${p.title}, ${p.place}`;
+  img.loading = "lazy";
+  img.addEventListener("error", () => { f.remove(); updateCounts(); }, {once:true});
+
+  const cap = el("figcaption");
+  const left = el("div");
+  left.append(el("h3", null, p.title), el("small", null, p.exif || p.place));
+  cap.append(left, el("span", "no", `${p.cat.toUpperCase()} · ${pad(i + 1)}`));
+
+  f.append(img, cap);
   f.addEventListener("click", () => openLb(i));
   f.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openLb(i); } });
   grid.appendChild(f);
 });
 
-const cats = ["All", ...new Set(PHOTOS.map(p => p.cat))];
 const filters = $("#filters");
-cats.forEach(c => {
-  const b = document.createElement("button");
-  b.className = "chip";
-  b.type = "button";
-  const n = c === "All" ? PHOTOS.length : PHOTOS.filter(p => p.cat === c).length;
-  b.innerHTML = `${c}<sup>${pad(n)}</sup>`;
-  b.setAttribute("aria-pressed", c === "All");
-  b.addEventListener("click", () => {
-    filters.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x === b));
-    grid.querySelectorAll(".shot").forEach(s => s.hidden = !(c === "All" || s.dataset.cat === c));
+function buildFilters(){
+  const shots = [...grid.querySelectorAll(".shot")];
+  const cats = ["All", ...new Set(shots.map(s => s.dataset.cat))];
+  const active = filters.querySelector('[aria-pressed="true"]')?.dataset.cat || "All";
+  filters.innerHTML = "";
+  cats.forEach(c => {
+    const b = el("button", "chip", c);
+    b.type = "button";
+    b.dataset.cat = c;
+    const n = c === "All" ? shots.length : shots.filter(s => s.dataset.cat === c).length;
+    b.appendChild(el("sup", null, pad(n)));
+    b.setAttribute("aria-pressed", c === active);
+    b.addEventListener("click", () => applyFilter(c));
+    filters.appendChild(b);
   });
-  filters.appendChild(b);
-});
+}
+function applyFilter(c){
+  filters.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.cat === c));
+  grid.querySelectorAll(".shot").forEach(s => s.hidden = !(c === "All" || s.dataset.cat === c));
+}
+let countTimer;
+function updateCounts(){ clearTimeout(countTimer); countTimer = setTimeout(buildFilters, 50); }
+buildFilters();
 
+/* ─── SERVICES ─────────────────────────────────────────────── */
 (() => {
-  const stage = $("#ocStage"); if (!stage) return;
-  const originals = [...stage.querySelectorAll(".oc-card")];
-  const n = originals.length;
-  originals.forEach(c => { const k = c.cloneNode(true); k.setAttribute("aria-hidden","true"); k.tabIndex = -1; stage.appendChild(k); });
-  const cards = [...stage.querySelectorAll(".oc-card")];
-  const total = cards.length;
-  let active = 0, timer = null;
-  const dots = $("#ocDots");
-  originals.forEach((c, i) => {
-    const d = document.createElement("button");
-    d.type = "button"; d.setAttribute("role","tab"); d.setAttribute("aria-label", c.querySelector("b").textContent);
-    d.addEventListener("click", () => { go(i); restart(); });
-    dots.appendChild(d);
-  });
-  function layout(){
-    const w = cards[0].offsetWidth;
-    const mobile = innerWidth <= 640;
-    cards.forEach((c, i) => {
-      let off = ((i - active) % total + total) % total;
-      if (off > total / 2) off -= total;
-      const a = Math.abs(off);
-      const scale = a === 0 ? 1 : a === 1 ? .84 : .7;
-      const x = off === 0 ? 0 : Math.sign(off) * (a === 1 ? w * (mobile ? .78 : .98) : w * (mobile ? 1.4 : 1.82));
-      c.style.transform = `translate(-50%,-50%) translateX(${x}px) scale(${scale})`;
-      c.style.zIndex = 10 - a;
-      c.style.opacity = a > 2 ? 0 : a === 2 ? .55 : 1;
-      c.style.filter = a === 0 ? "none" : `brightness(${a === 1 ? .82 : .6})`;
-      c.style.pointerEvents = a > 2 ? "none" : "";
-      c.classList.toggle("is-active", a === 0);
-    });
-    [...dots.children].forEach((d, i) => d.setAttribute("aria-selected", i === active % n));
-  }
-  function go(i){ active = ((i % total) + total) % total; layout(); }
-  const step = d => go(active + d);
-  function restart(){ clearInterval(timer); if (!still) timer = setInterval(() => step(1), 4500); }
-  $("#ocPrev").addEventListener("click", () => { step(-1); restart(); });
-  $("#ocNext").addEventListener("click", () => { step(1); restart(); });
-  cards.forEach((c, i) => c.addEventListener("click", e => {
-    if (dragged) { e.preventDefault(); return; }
-    if (i !== active) { e.preventDefault(); go(i); restart(); return; }
-    const g = c.dataset.go;
-    const chip = [...document.querySelectorAll("#filters .chip")].find(x => x.firstChild.textContent === g);
-    if (chip) chip.click();
-    const sel = document.getElementById("f-type");
-    if (!chip && sel) { const o = [...sel.options].find(o => o.text === g); if (o) sel.value = o.text; }
-  }));
-  const oc = $("#oc");
-  oc.addEventListener("mouseenter", () => clearInterval(timer));
-  oc.addEventListener("mouseleave", restart);
-  oc.addEventListener("keydown", e => { if (e.key === "ArrowRight") { step(1); restart(); } if (e.key === "ArrowLeft") { step(-1); restart(); } });
-  let sx = 0, dragging = false, dragged = false;
-  stage.addEventListener("pointerdown", e => { sx = e.clientX; dragging = true; dragged = false; });
-  addEventListener("pointerup", e => {
-    if (!dragging) return; dragging = false;
-    const d = e.clientX - sx;
-    if (Math.abs(d) > 40) { dragged = true; step(d < 0 ? 1 : -1); restart(); setTimeout(() => dragged = false, 50); }
-  });
-  addEventListener("resize", layout);
-  layout(); restart();
-})();
-
-(() => {
-  // ─── SERVICES ─────────────────────────────────────────────
-  // Person image (transparent PNG works best). If the file is missing, the built-in one is used.
   const SVC_PERSON = "imgs/main_person.png";
-  // Only used when the page is opened straight from a folder (file://): how much EMPTY space (%) the PNG has on each side.
   const SVC_PERSON_CROP = {top:0, right:0, bottom:0, left:0};
-  // side: "left" or "right" column. Order inside each column = top to bottom.
-  // x / y = where the line's dot lands ON THE PERSON, in %:
-  //   x: 0 = person's left edge, 100 = right edge · y: 0 = top of head, 100 = feet.
-  //   Keep left-side dots on the left half (x < 50) and right-side dots on the right half so lines never cross.
   const SVC = [
     {side:"left", label:"Candid Photos", tag:"Natural moments", title:"Candid photos", type:"Candid photos",
      desc:"Unposed, emotional photographs of the people and moments that make your day, captured as they happen.",
@@ -817,28 +787,31 @@ cats.forEach(c => {
      list:["Full ceremony recording","Multi-camera setup","Edited full-length video","Pen drive or online delivery"],
      price:"On request", small:"Quoted per event", x:72, y:76}
   ];
-  // ───────────────────────────────────────────────────────────
+
   const stage = $("#svcStage");
   if (!stage) return;
   const lines = $("#svcLines"), panel = $("#svcPanel"), pbox = $("#svcPerson"), man = pbox.querySelector(".svc-man");
   const cols = {left: $("#svcLeft"), right: $("#svcRight")};
   const NS = "http://www.w3.org/2000/svg";
+
   const tags = SVC.map((s, i) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "svc-tag"; b.textContent = s.label;
-    b.setAttribute("role","tab");
+    const b = el("button", "svc-tag", s.label);
+    b.type = "button";
+    b.setAttribute("role", "tab");
     b.addEventListener("click", () => pick(i));
     b.addEventListener("mouseenter", () => pick(i));
     b.addEventListener("focus", () => pick(i));
     (cols[s.side] || cols.left).appendChild(b);
     const g = document.createElementNS(NS, "g");
-    g.innerHTML = `<path d=""/><circle r="4"/>`;
+    g.appendChild(document.createElementNS(NS, "path"));
+    const c = document.createElementNS(NS, "circle"); c.setAttribute("r", 4);
+    g.appendChild(c);
     lines.appendChild(g);
     return b;
   });
 
-  let bounds = null;                     // visible person inside the image, natural pixels
-  let person = {x:0, y:0, w:1, h:1};     // where the person is drawn, stage pixels
+  let bounds = null;
+  let person = {x:0, y:0, w:1, h:1};
   function findBounds(){
     const W = man.naturalWidth, H = man.naturalHeight;
     let b = null;
@@ -852,7 +825,7 @@ cats.forEach(c => {
         if (d[(y * cw + x) * 4 + 3] > 24) { if (x < x1) x1 = x; if (x > x2) x2 = x; if (y < y1) y1 = y; if (y > y2) y2 = y; }
       }
       if (x2 > x1 && y2 > y1) b = {x:x1 / k, y:y1 / k, w:(x2 - x1 + 1) / k, h:(y2 - y1 + 1) / k};
-    } catch (e) { /* file:// blocks reading pixels: fall back to SVC_PERSON_CROP */ }
+    } catch (e) { /* file:// blocks pixel reads: use SVC_PERSON_CROP */ }
     if (!b) {
       const c = SVC_PERSON_CROP;
       b = {x:W * c.left / 100, y:H * c.top / 100, w:W * (1 - (c.left + c.right) / 100), h:H * (1 - (c.top + c.bottom) / 100)};
@@ -862,9 +835,10 @@ cats.forEach(c => {
   function fitPerson(){
     if (!bounds) return;
     const bw = pbox.clientWidth, bh = pbox.clientHeight;
+    if (!bw || !bh) return;
     const k = Math.min(bw / bounds.w, bh / bounds.h);
     const pw = bounds.w * k, ph = bounds.h * k;
-    const left = (bw - pw) / 2, top = bh - ph;           // centred, feet on the floor
+    const left = (bw - pw) / 2, top = bh - ph;
     man.style.width = (man.naturalWidth * k) + "px";
     man.style.left = (left - bounds.x * k) + "px";
     man.style.top = (top - bounds.y * k) + "px";
@@ -894,10 +868,10 @@ cats.forEach(c => {
   else if (man.complete) onImage();
   if ("ResizeObserver" in window) new ResizeObserver(sizeLines).observe(stage);
 
-  let cur = -1;
+  let current = -1;
   function pick(i){
-    if (i === cur) return;
-    cur = i;
+    if (i === current) return;
+    current = i;
     const s = SVC[i];
     tags.forEach((b, j) => b.setAttribute("aria-selected", j === i));
     [...lines.children].forEach((g, j) => g.classList.toggle("on", j === i));
@@ -916,20 +890,24 @@ cats.forEach(c => {
   addEventListener("load", sizeLines);
 })();
 
+/* ─── LIGHTBOX ─────────────────────────────────────────────── */
 const lb = $("#lb");
-let cur = 0;
+let lbIndex = 0;
 let lastFocus = null;
 const visible = () => [...grid.querySelectorAll(".shot:not([hidden])")].map(s => +s.dataset.i);
 
 function show(i){
-  cur = i;
+  lbIndex = i;
   const p = PHOTOS[i];
   const list = visible();
   $("#lb-img").src = p.src;
   $("#lb-img").alt = p.title;
   $("#lb-title").textContent = p.title;
-  $("#lb-exif").textContent = `${p.place} · ${p.exif}`;
-  $("#lb-count").textContent = `${pad(list.indexOf(i)+1)} / ${pad(list.length)}`;
+  $("#lb-exif").textContent = [p.place, p.exif].filter(Boolean).join(" · ");
+  $("#lb-count").textContent = `${pad(list.indexOf(i) + 1)} / ${pad(list.length)}`;
+  const many = list.length > 1;
+  $("#lb-prev").disabled = !many;
+  $("#lb-next").disabled = !many;
 }
 function openLb(i){
   lastFocus = document.activeElement;
@@ -943,66 +921,83 @@ function closeLb(){
   document.body.style.overflow = "";
   lastFocus && lastFocus.focus();
 }
-function step(d){
+function lbStep(d){
   const list = visible();
-  const k = (list.indexOf(cur) + d + list.length) % list.length;
+  if (list.length < 2) return;
+  const k = (list.indexOf(lbIndex) + d + list.length) % list.length;
   show(list[k]);
 }
 $("#lb-close").addEventListener("click", closeLb);
-$("#lb-prev").addEventListener("click", () => step(-1));
-$("#lb-next").addEventListener("click", () => step(1));
+$("#lb-prev").addEventListener("click", () => lbStep(-1));
+$("#lb-next").addEventListener("click", () => lbStep(1));
 lb.addEventListener("click", e => { if (e.target === lb || e.target.classList.contains("lb-stage")) closeLb(); });
 addEventListener("keydown", e => {
   if (lb.hidden) return;
   if (e.key === "Escape") closeLb();
-  if (e.key === "ArrowRight") step(1);
-  if (e.key === "ArrowLeft") step(-1);
+  if (e.key === "ArrowRight") lbStep(1);
+  if (e.key === "ArrowLeft") lbStep(-1);
+  if (e.key === "Tab") {                       // keep focus inside the viewer
+    const f = [...lb.querySelectorAll("button:not([disabled])")];
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
 });
 let tx = 0;
 lb.addEventListener("touchstart", e => tx = e.touches[0].clientX, {passive:true});
-lb.addEventListener("touchend", e => { const d = e.changedTouches[0].clientX - tx; if (Math.abs(d) > 50) step(d < 0 ? 1 : -1); });
+lb.addEventListener("touchend", e => { const d = e.changedTouches[0].clientX - tx; if (Math.abs(d) > 50) lbStep(d < 0 ? 1 : -1); });
 
-if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+/* ─── REVEAL + COUNTERS ────────────────────────────────────── */
+if ("IntersectionObserver" in window && !still) {
   const io = new IntersectionObserver(es => es.forEach(en => {
     if (en.isIntersecting) { en.target.classList.remove("pre"); io.unobserve(en.target); }
   }), {rootMargin:"0px 0px -8% 0px"});
-  document.querySelectorAll(".reveal").forEach(el => {
-    const r = el.getBoundingClientRect();
-    if (r.top > innerHeight) { el.classList.add("pre"); io.observe(el); }
+  document.querySelectorAll(".reveal").forEach(n => {
+    if (n.getBoundingClientRect().top > innerHeight) { n.classList.add("pre"); io.observe(n); }
   });
 
   const cio = new IntersectionObserver(es => es.forEach(en => {
     if (!en.isIntersecting) return;
-    const el = en.target, end = +el.dataset.count, t0 = performance.now();
-    const tick = t => { const k = Math.min((t - t0) / 1400, 1); el.textContent = Math.round(end * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(tick); };
+    const n = en.target, end = +n.dataset.count, t0 = performance.now();
+    const tick = t => { const k = Math.min((t - t0) / 1400, 1); n.textContent = Math.round(end * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(tick); };
     requestAnimationFrame(tick);
-    cio.unobserve(el);
+    cio.unobserve(n);
   }), {threshold:.6});
-  document.querySelectorAll("[data-count]").forEach(el => cio.observe(el));
+  document.querySelectorAll("[data-count]").forEach(n => cio.observe(n));
 }
 
+/* ─── COPY BUTTONS (with fallback for file:// and old browsers) ─ */
+function copyText(txt){
+  if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(txt);
+  return new Promise((res, rej) => {
+    const ta = el("textarea"); ta.value = txt;
+    ta.style.cssText = "position:fixed;opacity:0;pointer-events:none";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy") ? res() : rej(); } catch (e) { rej(e); }
+    ta.remove();
+  });
+}
 document.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", () => {
-  const txt = b.dataset.copy;
-  const done = () => { b.textContent = "Copied"; setTimeout(() => b.textContent = "Copy", 1600); };
-  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done).catch(() => {});
+  copyText(b.dataset.copy)
+    .then(() => { b.textContent = "Copied"; setTimeout(() => b.textContent = "Copy", 1600); })
+    .catch(() => { b.textContent = "Copy failed"; setTimeout(() => b.textContent = "Copy", 1600); });
 }));
 
+/* ─── ENQUIRY FORM ─────────────────────────────────────────── */
 $("#form").addEventListener("submit", e => {
   e.preventDefault();
-  const f = e.target.elements, note = $("#note");
-  const name = f.name.value.trim(), email = f.email.value.trim(), msg = f.message.value.trim();
+  const form = e.target, note = $("#note");
+  const get = n => form.querySelector(`[name="${n}"]`).value.trim();
+  const name = get("name"), email = get("email"), msg = get("message"), type = get("type"), date = get("date");
   if (!name || !email || !msg) { note.textContent = "Add your name, email and a short message so I can reply."; return; }
   if (!/^\S+@\S+\.\S+$/.test(email)) { note.textContent = "That email address looks incomplete. Check it and try again."; return; }
   const to = $("#mail").textContent.trim();
-  const body = `Name: ${name}\nEmail: ${email}\nShoot: ${f.type.value}\nDate: ${f.date.value || "Flexible"}\n\n${msg}`;
-  const link = document.createElement("a");
-  link.href = `mailto:${to}?subject=${encodeURIComponent("Shoot enquiry: " + f.type.value)}&body=${encodeURIComponent(body)}`;
-  link.click();
+  const body = `Name: ${name}\nEmail: ${email}\nShoot: ${type}\nDate: ${date || "Flexible"}\n\n${msg}`;
+  location.href = `mailto:${to}?subject=${encodeURIComponent("Shoot enquiry: " + type)}&body=${encodeURIComponent(body)}`;
   note.textContent = `Your email app should open with the enquiry filled in. If it doesn't, write to ${to}.`;
 });
 
 $("#yr").textContent = new Date().getFullYear();
-
 </script>
 </body>
 </html>
