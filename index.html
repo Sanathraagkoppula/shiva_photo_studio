@@ -717,14 +717,14 @@ let heroTop = 0, heroSpan = 1, sceneK = 1, lastP = -1, lastShown = -1, lastCp = 
 // Where each photo lands on tall screens: [centre across, centre down, width]
 // as fractions of the visible area (0 = left/top edge, 1 = right/bottom edge).
 const MOBILE_LAYOUT = {
-  portrait: [.50, .10, .30],
-  mountain: [.16, .21, .28],
-  city:     [.85, .20, .25],
-  mid:      [.12, .52, .25],
-  shore:    [.88, .54, .25],
-  leaf:     [.24, .82, .33],
-  figure:   [.76, .82, .35],
-  ocean:    [.50, .94, .26]
+  portrait: [.50, .09, .28],
+  mountain: [.16, .20, .27],
+  city:     [.85, .19, .24],
+  mid:      [.12, .57, .24],
+  shore:    [.88, .59, .24],
+  leaf:     [.22, .89, .28],
+  figure:   [.78, .89, .30],
+  ocean:    [.50, .96, .22]
 };
 // ─────────────────────────────────────────────────────────────
 const tallScreen = matchMedia("(max-aspect-ratio: 1/1)");
@@ -740,12 +740,12 @@ function layoutCards(){
     const top = vf.top + 34;
     const bottom = Math.min(vf.bottom, btns.top) - 14;
 
-    // centre the camera in the space between the viewfinder top and the buttons
+    // centre the camera in the viewfinder frame (the middle of the screen)
     let sr = scene.getBoundingClientRect();
     const camX = sr.left + cam.offsetLeft + cam.offsetWidth / 2;
     const camY = sr.top + cam.offsetTop + cam.offsetHeight / 2;
     const sx = (vf.left + vf.right) / 2 - camX;
-    const sy = (top + bottom) / 2 - camY;
+    const sy = (top + vf.bottom) / 2 - camY;   // middle of the viewfinder frame
     scene.style.transform = `translate(calc(-50% + ${sx.toFixed(1)}px), calc(-50% + ${sy.toFixed(1)}px))`;
     sr = scene.getBoundingClientRect();
     const kk = sr.width / 1672 || 1;
