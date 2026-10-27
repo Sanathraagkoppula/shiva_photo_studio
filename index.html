@@ -324,6 +324,8 @@ footer{border-top:1px solid var(--line);padding-block:32px}
   .exif-bar span:nth-child(n+2){display:none}
   .stats div + div{padding-left:12px}
   .hero-side .btn{width:100%;justify-content:center}
+  .hero-copy .btn{padding:14px 16px;font-size:11.5px;letter-spacing:.1em;gap:8px}
+  .hero-copy .wrap > div{flex-wrap:nowrap!important;gap:10px!important}
   .lb-title{font-size:21px}
   .lb button{width:44px;height:44px}
   .stats b{font-size:30px}
@@ -714,17 +716,21 @@ if (still) hero.style.height = "100vh";
 
 let heroTop = 0, heroSpan = 1, sceneK = 1, lastP = -1, lastShown = -1, lastCp = -1, lastSolid = null;
 // ─── PHONE / TABLET PORTRAIT LAYOUT ─────────────────────────
-// Where each photo lands on tall screens: [centre across, centre down, width]
-// as fractions of the visible area (0 = left/top edge, 1 = right/bottom edge).
+// On tall screens the camera is centred in the viewfinder frame and every
+// photo is placed relative to the CAMERA, so the layout stays tight on any phone.
+// [across, down, size]
+//   across: -1 = camera's left edge, 0 = centre, 1 = camera's right edge
+//   down:   -1 = camera's top edge,  0 = centre, 1 = camera's bottom edge
+//   size:   card width as a fraction of the screen width
 const MOBILE_LAYOUT = {
-  portrait: [.50, .35, .27],
-  mountain: [.17, .37, .26],
-  city:     [.83, .35, .23],
-  mid:      [.12, .61, .24],
-  shore:    [.88, .63, .24],
-  leaf:     [.22, .87, .28],
-  figure:   [.78, .87, .30],
-  ocean:    [.50, .93, .22]
+  portrait: [  0.00, -1.30, .27],
+  mountain: [ -0.80, -1.15, .26],
+  city:     [  0.80, -1.30, .23],
+  mid:      [ -0.95,  0.15, .24],
+  shore:    [  0.95,  0.25, .24],
+  leaf:     [ -0.62,  1.70, .28],
+  figure:   [  0.62,  1.70, .30],
+  ocean:    [  0.00,  1.95, .22]
 };
 // ─────────────────────────────────────────────────────────────
 const tallScreen = matchMedia("(max-aspect-ratio: 1/1)");
@@ -732,35 +738,48 @@ photos.forEach(ph => ph.orig = {x: ph.x, y: ph.y, w: ph.w});
 
 function layoutCards(){
   const mob = tallScreen.matches;
-  let area = null;
+  let A = null;
   scene.style.transform = "";
   if (mob) {
     const vf = document.querySelector(".vf").getBoundingClientRect();
     const btns = copyEl.querySelector(".wrap").getBoundingClientRect();
     const top = vf.top + 34;
-    const bottom = Math.min(vf.bottom, btns.top) - 14;
+    const bottom = Math.min(vf.bottom, btns.top) - 12;
 
-    // centre the camera in the viewfinder frame (the middle of the screen)
+    // move the whole scene so the camera sits in the middle of the viewfinder frame
     let sr = scene.getBoundingClientRect();
     const camX = sr.left + cam.offsetLeft + cam.offsetWidth / 2;
     const camY = sr.top + cam.offsetTop + cam.offsetHeight / 2;
     const sx = (vf.left + vf.right) / 2 - camX;
-    const sy = (top + vf.bottom) / 2 - camY;   // middle of the viewfinder frame
+    const sy = (top + vf.bottom) / 2 - camY;
     scene.style.transform = `translate(calc(-50% + ${sx.toFixed(1)}px), calc(-50% + ${sy.toFixed(1)}px))`;
     sr = scene.getBoundingClientRect();
     const kk = sr.width / 1672 || 1;
-    area = {x: (vf.left - sr.left) / kk, y: (top - sr.top) / kk, w: vf.width / kk, h: Math.max(1, bottom - top) / kk};
+
+    A = {
+      left:   (vf.left - sr.left) / kk,
+      right:  (vf.right - sr.left) / kk,
+      top:    (top - sr.top) / kk,
+      bottom: (bottom - sr.top) / kk,
+      width:  vf.width / kk,
+      cx:     (cam.offsetLeft + cam.offsetWidth / 2) / kk,
+      cy:     (cam.offsetTop + cam.offsetHeight / 2) / kk,
+      hw:     cam.offsetWidth * .46 / kk,          // half the visible camera width
+      hh:     cam.offsetHeight * .28 / kk          // half the visible camera height
+    };
   }
   photos.forEach(ph => {
     const L = mob && MOBILE_LAYOUT[ph.el.dataset.k];
     const ratio = ph.el.offsetWidth ? ph.el.offsetHeight / ph.el.offsetWidth : 1;
     let x, y, w;
     if (L) {
-      w = L[2] * Math.min(area.w, area.h * .62);
+      w = L[2] * A.width;
       const h = w * ratio;
-      x = area.x + L[0] * area.w - w / 2;
-      y = Math.min(area.y + L[1] * area.h - h / 2, area.y + area.h - h);
-      y = Math.max(y, area.y);
+      const pad = A.width * .015;
+      x = A.cx + L[0] * A.hw - w / 2;
+      y = A.cy + L[1] * A.hh - h / 2;
+      x = Math.min(Math.max(x, A.left + pad), A.right - pad - w);
+      y = Math.min(Math.max(y, A.top), A.bottom - h);
     } else {
       ({x, y, w} = ph.orig);
     }
