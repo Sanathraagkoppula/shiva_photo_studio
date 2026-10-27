@@ -367,9 +367,9 @@ footer{border-top:1px solid var(--line);padding-block:32px}
       <div class="hint" id="hint" aria-hidden="true"><b>Scroll to take the shot</b><span class="mouse"></span></div>
       <div class="hero-copy">
       <div class="wrap">
-        <h1><span><b>Light,</b></span><span><b><em>held still.</em></b></span></h1>
+        <!--h1><span><b>Light,</b></span><span><b><em>held` still.</em></b></span></h1>
         <div class="hero-side">
-          <p>Landscape, portrait and street photography made in the last hour of light. Based in Warangal, shooting wherever the story is.</p>
+          <p>Landscape, portrait and street photography made in the last hour of light. Based in Warangal, shooting wherever the story is.</p-->
           <div style="display:flex;gap:12px;flex-wrap:wrap">
             <a class="btn" href="#work">View the work <span aria-hidden="true">→</span></a>
             <a class="btn ghost" href="#contact">Enquire</a>
@@ -558,29 +558,33 @@ const $ = s => document.querySelector(s);
 const pad = n => String(n).padStart(2, "0");
 
 // ─── GALLERY PHOTOS ─────────────────────────────────────────
+// cat can be one category ("Portrait") or a list (["All","Marriage"]).
+// Add "All" to a photo's list to feature it under the ALL chip.
+// Photos without "All" appear only under their own category chips.
+// If no photo is tagged "All", the ALL chip shows every photo.
 // Entries with an empty src are skipped automatically.
-// title / place / exif / ar are optional; sensible defaults are filled in.
 const RAW_PHOTOS = [
-  {src:"imgs/wedding/01.jpg", cat:"Marriage", title:"First look"},
-  {src:"imgs/wedding/02.jpg", cat:"Marriage", title:"First look"},
-  {src:"imgs/events/01.jpeg",      cat:"Events",   title:"Stage lights"},
-  {src:"imgs/candid_imgs/01.jpg",   cat:"Portrait", title:"Window light"},
-  {src:"imgs/events/02.jpeg",      cat:"Events",   title:"Wedding ceremony"},
-  {src:"imgs/birthday/01.jpeg",     cat:"Birthday", title:"Birthday party"},
-  {src:"imgs/birthday/03.jpeg",     cat:"Birthday", title:"Birthday party"},
-  {src:"imgs/birthday/02.jpeg",     cat:"Birthday", title:"Birthday party"},
-  {src:"imgs/candid_imgs/02.jpg", cat:"Portrait", title:"Between frames"},
-  {src:"imgs/candid_imgs/04.jpeg", cat:"Portrait", title:"Between frames"},
-  {src:"imgs/candid_imgs/05.jpeg", cat:"Portrait", title:"Between frames"},
-  {src:"imgs/candid_imgs/03.jpg", cat:"Portrait", title:"Between frames"},
-  {src:"imgs/portraits/03.jpg",   cat:"Portrait", title:"Golden hour"}
+  {src:"imgs/wedding/01.jpg",      cat:["All","Marriage"], title:"First look"},
+  {src:"imgs/wedding/02.jpg",      cat:"Marriage",         title:"First look"},
+  {src:"imgs/events/01.jpeg",      cat:["All","Events"],   title:"Stage lights"},
+  {src:"imgs/candid_imgs/01.jpg",  cat:["All","Portrait"], title:"Window light"},
+  {src:"imgs/events/02.jpeg",      cat:"Events",           title:"Wedding ceremony"},
+  {src:"imgs/birthday/01.jpeg",    cat:["All","Birthday"], title:"Birthday party"},
+  {src:"imgs/birthday/03.jpeg",    cat:"Birthday",         title:"Birthday party"},
+  {src:"imgs/birthday/02.jpeg",    cat:"Birthday",         title:"Birthday party"},
+  {src:"imgs/candid_imgs/02.jpg",  cat:["All","Portrait"], title:"Between frames"},
+  {src:"imgs/candid_imgs/04.jpeg", cat:"Portrait",         title:"Between frames"},
+  {src:"imgs/candid_imgs/05.jpeg", cat:"Portrait",         title:"Between frames"},
+  {src:"imgs/candid_imgs/03.jpg",  cat:"Portrait",         title:"Between frames"},
+  {src:"imgs/portraits/03.jpg",    cat:["All","Portrait"], title:"Golden hour"}
 ];
+const catsOf = p => (Array.isArray(p.cat) ? p.cat : [p.cat]).filter(Boolean);
 const PHOTOS = RAW_PHOTOS.filter(p => p.src).map((p, i) => ({
-  title: p.title || `${p.cat} ${pad(i + 1)}`,
   place: p.place || "Warangal, Telangana",
   exif:  p.exif  || "",
   ar:    p.ar    || "",
-  ...p
+  ...p,
+  title: p.title || `${catsOf(p).filter(c => c !== "All")[0] || "Photo"} ${pad(i + 1)}`
 }));
 // ─────────────────────────────────────────────────────────────
 
@@ -705,11 +709,15 @@ render();
 /* ─── GALLERY ──────────────────────────────────────────────── */
 const grid = $("#grid");
 const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+const shotCats = s => s.dataset.cat.split("|");
+const inAll = s => shotCats(s).includes("All");
 
 PHOTOS.forEach((p, i) => {
+  const cats = catsOf(p);
+  const shown = cats.filter(c => c !== "All");
   const f = el("figure", "shot");
   f.tabIndex = 0;
-  f.dataset.cat = p.cat;
+  f.dataset.cat = cats.join("|");
   f.dataset.i = i;
   if (p.ar) f.style.setProperty("--ar", p.ar);
 
@@ -717,12 +725,15 @@ PHOTOS.forEach((p, i) => {
   img.src = p.src;
   img.alt = `${p.title}, ${p.place}`;
   img.loading = "lazy";
-  img.addEventListener("error", () => { f.remove(); updateCounts(); }, {once:true});
+  img.addEventListener("error", () => {
+    console.warn("❌ Image not found:", img.src);
+    f.remove(); updateCounts();
+  }, {once:true});
 
   const cap = el("figcaption");
   const left = el("div");
-  left.append(el("h3", null, p.title), el("small", null, p.exif || p.place));
-  cap.append(left, el("span", "no", `${p.cat.toUpperCase()} · ${pad(i + 1)}`));
+  left.append(el("h3", null, p.title), el("small", null, p.exif || shown.join(" · ") || p.place));
+  cap.append(left, el("span", "no", pad(i + 1)));
 
   f.append(img, cap);
   f.addEventListener("click", () => openLb(i));
@@ -733,23 +744,31 @@ PHOTOS.forEach((p, i) => {
 const filters = $("#filters");
 function buildFilters(){
   const shots = [...grid.querySelectorAll(".shot")];
-  const cats = ["All", ...new Set(shots.map(s => s.dataset.cat))];
-  const active = filters.querySelector('[aria-pressed="true"]')?.dataset.cat || "All";
+  const tagged = shots.some(inAll);
+  const cats = ["All", ...new Set(shots.flatMap(shotCats).filter(c => c !== "All"))];
+  let active = filters.querySelector('[aria-pressed="true"]')?.dataset.cat || "All";
+  if (!cats.includes(active)) active = "All";
   filters.innerHTML = "";
   cats.forEach(c => {
     const b = el("button", "chip", c);
     b.type = "button";
     b.dataset.cat = c;
-    const n = c === "All" ? shots.length : shots.filter(s => s.dataset.cat === c).length;
+    const n = c === "All"
+      ? (tagged ? shots.filter(inAll).length : shots.length)
+      : shots.filter(s => shotCats(s).includes(c)).length;
     b.appendChild(el("sup", null, pad(n)));
     b.setAttribute("aria-pressed", c === active);
     b.addEventListener("click", () => applyFilter(c));
     filters.appendChild(b);
   });
+  applyFilter(active);
 }
 function applyFilter(c){
+  const tagged = [...grid.querySelectorAll(".shot")].some(inAll);
   filters.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.cat === c));
-  grid.querySelectorAll(".shot").forEach(s => s.hidden = !(c === "All" || s.dataset.cat === c));
+  grid.querySelectorAll(".shot").forEach(s => {
+    s.hidden = !(c === "All" ? (!tagged || inAll(s)) : shotCats(s).includes(c));
+  });
 }
 let countTimer;
 function updateCounts(){ clearTimeout(countTimer); countTimer = setTimeout(buildFilters, 50); }
