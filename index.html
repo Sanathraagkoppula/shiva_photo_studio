@@ -713,10 +713,62 @@ photos.forEach(ph => {
 if (still) hero.style.height = "100vh";
 
 let heroTop = 0, heroSpan = 1, sceneK = 1, lastP = -1, lastShown = -1, lastCp = -1, lastSolid = null;
+// ─── PHONE / TABLET PORTRAIT LAYOUT ─────────────────────────
+// Where each photo lands on tall screens: [centre across, centre down, width]
+// as fractions of the visible area (0 = left/top edge, 1 = right/bottom edge).
+const MOBILE_LAYOUT = {
+  portrait: [.50, .10, .30],
+  mountain: [.15, .21, .28],
+  city:     [.86, .21, .25],
+  mid:      [.14, .51, .27],
+  shore:    [.86, .53, .27],
+  leaf:     [.25, .81, .35],
+  figure:   [.76, .81, .37],
+  ocean:    [.50, .94, .27]
+};
+// ─────────────────────────────────────────────────────────────
+const tallScreen = matchMedia("(max-aspect-ratio: 1/1)");
+photos.forEach(ph => ph.orig = {x: ph.x, y: ph.y, w: ph.w});
+
+function layoutCards(){
+  const mob = tallScreen.matches;
+  let area = null;
+  if (mob) {
+    const sr = scene.getBoundingClientRect();
+    const kk = sr.width / 1672 || 1;
+    const vf = document.querySelector(".vf").getBoundingClientRect();
+    const btns = copyEl.querySelector(".wrap").getBoundingClientRect();
+    const top = vf.top + 34;
+    const bottom = Math.min(vf.bottom, btns.top) - 14;
+    area = {x: (vf.left - sr.left) / kk, y: (top - sr.top) / kk, w: vf.width / kk, h: Math.max(1, bottom - top) / kk};
+  }
+  photos.forEach(ph => {
+    const L = mob && MOBILE_LAYOUT[ph.el.dataset.k];
+    const ratio = ph.el.offsetWidth ? ph.el.offsetHeight / ph.el.offsetWidth : 1;
+    let x, y, w;
+    if (L) {
+      w = L[2] * Math.min(area.w, area.h * .62);
+      const h = w * ratio;
+      x = area.x + L[0] * area.w - w / 2;
+      y = Math.min(area.y + L[1] * area.h - h / 2, area.y + area.h - h);
+      y = Math.max(y, area.y);
+    } else {
+      ({x, y, w} = ph.orig);
+    }
+    ph.el.style.setProperty("--x", x.toFixed(1));
+    ph.el.style.setProperty("--y", y.toFixed(1));
+    ph.el.style.setProperty("--w", w.toFixed(1));
+    ph.x = x; ph.y = y; ph.w = w;
+    ph.cx = x + w / 2;
+    ph.cy = y + ratio * w / 2;
+  });
+}
+
 function measure(){
   heroTop = hero.offsetTop;
   heroSpan = Math.max(1, hero.offsetHeight - innerHeight);
   sceneK = scene.offsetWidth / 1672;
+  layoutCards();
 }
 
 function render(force){
