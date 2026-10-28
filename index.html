@@ -682,7 +682,16 @@ const RAW_PHOTOS = [
   {src:"imgs/candid_imgs/04.jpeg", cat:"Portrait",         title:"Between frames"},
   {src:"imgs/candid_imgs/05.jpeg", cat:"Portrait",         title:"Between frames"},
   {src:"imgs/candid_imgs/03.jpg",  cat:"Portrait",         title:"Between frames"},
-  {src:"imgs/portraits/03.jpg",    cat:["All","Portrait"], title:"Golden hour"}
+  {src:"imgs/portraits/03.jpg",    cat:["All","Portrait"], title:"Golden hour"},
+  {src:"imgs/birthday/04.jpeg",    cat:"Birthday",         title:"Birthday party"},
+  {src:"imgs/birthday/05.jpeg",    cat:"Birthday",         title:"Birthday party"},
+  {src:"imgs/birthday/06.jpeg",    cat:"Birthday",         title:"Birthday party"},
+  {src:"imgs/birthday/07.jpeg",    cat:"Birthday",         title:"Birthday party"},
+  {src:"imgs/birthday/08.jpeg",    cat:"Birthday",         title:"Birthday party"},
+  {src:"imgs/birthday/09.jpeg",    cat:"Birthday",         title:"Birthday party"},
+  {src:"imgs/birthday/10.jpeg",    cat:"Birthday",         title:"Birthday party"},
+  {src:"imgs/birthday/11.jpeg",    cat:"Birthday",         title:"Birthday party"},
+  {src:"imgs/birthday/12.jpeg",    cat:"Birthday",         title:"Birthday party"},
 ];
 const catsOf = p => (Array.isArray(p.cat) ? p.cat : [p.cat]).filter(Boolean);
 const PHOTOS = RAW_PHOTOS.filter(p => p.src).map((p, i) => ({
