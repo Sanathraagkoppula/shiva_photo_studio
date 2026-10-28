@@ -386,7 +386,9 @@ footer{border-top:1px solid var(--line);padding-block:32px}
 .glow{background:radial-gradient(circle,rgba(28,74,147,.12) 0%,rgba(28,74,147,.04) 35%,transparent 65%)}
 .layer.photo{filter:drop-shadow(0 18px 30px rgba(10,26,56,.35))}
 .layer.cam{filter:drop-shadow(0 30px 50px rgba(28,74,147,.25))}
-.shade{background:linear-gradient(180deg,rgba(239,235,221,.6) 0%,rgba(239,235,221,0) 20%,rgba(239,235,221,.15) 38%,rgba(239,235,221,.9) 64%,rgba(239,235,221,.98) 100%)}
+.shade{background:linear-gradient(180deg,rgba(239,235,221,.35) 0%,rgba(239,235,221,0) 14%,rgba(239,235,221,0) 74%,rgba(239,235,221,.55) 90%,rgba(239,235,221,.85) 100%)}
+.nav{background:linear-gradient(180deg,rgba(239,235,221,.82),rgba(239,235,221,.62));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.rec,.exif-bar{background:rgba(239,235,221,.82);padding:5px 10px;opacity:1;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .hero-side p{color:var(--mute)}
 .chip[aria-pressed="true"]{color:#fff}
 .shot figcaption{background:linear-gradient(transparent,rgba(10,26,56,.85))}
@@ -420,8 +422,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .svc-cta:hover{background:var(--amber-deep);color:#fff}
 .copy:hover{color:var(--paper)}
 @media (max-width:560px){
-  .hero::after{background:linear-gradient(180deg,rgba(239,235,221,.6) 0%,rgba(239,235,221,0) 18%,rgba(239,235,221,.15) 30%,rgba(239,235,221,.94) 62%,rgba(239,235,221,.98) 100%)}
+  .hero::after{background:linear-gradient(180deg,rgba(239,235,221,.35) 0%,rgba(239,235,221,0) 14%,rgba(239,235,221,0) 64%,rgba(239,235,221,.75) 86%,rgba(239,235,221,.9) 100%)}
 }
+.full::after{content:"";position:absolute;inset:0;background:rgba(239,235,221,.86)}
+.layer.cam{filter:drop-shadow(0 30px 50px rgba(10,26,56,.28))}
 </style>
 </head>
 <body>
@@ -751,7 +755,7 @@ const photos = [...document.querySelectorAll(".layer.photo")].map((el, i) => {
   el.style.backfaceVisibility = "hidden";
   const sz = SIZE[i % SIZE.length];
   el.style.filter = (BLUR_Z[i % BLUR_Z.length] ? `blur(${BLUR_Z[i % BLUR_Z.length]}px) ` : "") +
-    `drop-shadow(0 ${Math.round(14 + 10 * sz)}px ${Math.round(22 + 16 * sz)}px rgba(0,0,0,.72))`;
+    `drop-shadow(0 ${Math.round(14 + 10 * sz)}px ${Math.round(22 + 16 * sz)}px rgba(10,26,56,.28))`;
   const ratio = el.offsetWidth ? el.offsetHeight / el.offsetWidth : 1;
   return {el, i, x, y, w, cx: x + w / 2, cy: y + ratio * w / 2};
 });
