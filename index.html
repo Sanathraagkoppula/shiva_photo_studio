@@ -1243,17 +1243,46 @@ document.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click"
 }));
 
 /* ─── ENQUIRY FORM ─────────────────────────────────────────── */
-$("#form").addEventListener("submit", e => {
+const ENQUIRY_TO = "shivaram8838@gmail.com";   // ← enquiries are delivered to this inbox
+
+$("#form").addEventListener("submit", async e => {
   e.preventDefault();
-  const form = e.target, note = $("#note");
-  const get = n => form.querySelector(`[name="${n}"]`).value.trim();
+  const form = e.target, note = $("#note"), btn = form.querySelector('button[type="submit"]');
+  const get = n => { const el = form.querySelector(`[name="${n}"]`); return el ? el.value.trim() : ""; };
   const name = get("name"), email = get("email"), msg = get("message"), type = get("type"), date = get("date");
-  if (!name || !email || !msg) { note.textContent = "Add your name, email and a short message so I can reply."; return; }
+
+  if (!name || !email) { note.textContent = "Add your name and email so I can reply."; return; }
   if (!/^\S+@\S+\.\S+$/.test(email)) { note.textContent = "That email address looks incomplete. Check it and try again."; return; }
-  const to = $("#mail").textContent.trim();
-  const body = `Name: ${name}\nEmail: ${email}\nShoot: ${type}\nDate: ${date || "Flexible"}\n\n${msg}`;
-  location.href = `mailto:${to}?subject=${encodeURIComponent("Shoot enquiry: " + type)}&body=${encodeURIComponent(body)}`;
-  note.textContent = `Your email app should open with the enquiry filled in. If it doesn't, write to ${to}.`;
+
+  btn.disabled = true;
+  note.textContent = "Sending…";
+
+  try {
+    const res = await fetch(`https://formsubmit.co/ajax/${ENQUIRY_TO}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({
+        _subject: `New shoot enquiry: ${type} — ${name}`,
+        _replyto: email,
+        _template: "table",
+        _captcha: "false",
+        Name: name,
+        Email: email,
+        "Shoot type": type,
+        "Preferred date": date || "Flexible",
+        Message: msg || "—"
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || String(data.success) !== "true") throw new Error(data.message || "Send failed");
+
+    form.reset();
+    note.textContent = "Thanks! Your enquiry has been sent — I'll get back to you soon.";
+  } catch (err) {
+    note.textContent = `Couldn't send right now. Please try again, or write to ${ENQUIRY_TO}.`;
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 $("#yr").textContent = new Date().getFullYear();
