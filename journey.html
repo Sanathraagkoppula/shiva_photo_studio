@@ -549,7 +549,6 @@ addEventListener("keydown", e => {
   if (e.key === "ArrowRight") step(1);
   if (e.key === "ArrowLeft") step(-1);
 });
-
 /* reveal + counters */
 if ("IntersectionObserver" in window && !still) {
   const io = new IntersectionObserver(es => es.forEach(en => {
@@ -566,7 +565,6 @@ if ("IntersectionObserver" in window && !still) {
   }), {threshold:.6});
   document.querySelectorAll("[data-count]").forEach(el => cio.observe(el));
 }
-
 $("#yr").textContent = new Date().getFullYear();
 </script>
 </body>
