@@ -436,13 +436,82 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .btn.sq svg .dot{fill:currentColor;stroke:none}
 .btn.sq:hover{gap:12px}
 [hidden]{display:none!important}
+
+/* ===== TEXT MOTION (headings, labels, paragraphs, buttons) ===== */
+/* Word-by-word heading rise */
+.tw{display:inline-block;overflow:hidden;vertical-align:bottom;padding:0 .08em .14em 0;margin:0 -.08em -.14em 0}
+.tw-i{display:inline-block;transform-origin:0 100%;transition:transform 1s cubic-bezier(.2,.75,.1,1) var(--d,0ms),opacity .8s ease var(--d,0ms)}
+.tm-on .tm-words:not(.tm-in) .tw-i{transform:translateY(112%) rotate(5deg);opacity:0}
+
+/* Italic accent words: light sweep after they rise, again on hover */
+.tm-words em .tw-i{background:linear-gradient(100deg,var(--amber) 0 38%,#86AEEA 50%,var(--amber) 62% 100%) 100% 0/260% 100% no-repeat;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.tm-words.tm-in em .tw-i{animation:tmShine 1.8s cubic-bezier(.4,0,.2,1) calc(var(--d,0ms) + .7s) both}
+@media (hover:hover){.tm-words.tm-in:hover em .tw-i{animation:tmShine2 1.3s cubic-bezier(.4,0,.2,1) both}}
+@keyframes tmShine{from{background-position:100% 0}to{background-position:0 0}}
+@keyframes tmShine2{from{background-position:100% 0}to{background-position:0 0}}
+
+/* Eyebrow labels "type in" with a viewfinder-style flicker */
+.tc{display:inline-block;white-space:pre}
+.tm-on .tm-type:not(.tm-in) .tc{opacity:0}
+.tm-type.tm-in .tc{animation:tmType .38s steps(4,end) var(--d,0ms) both}
+@keyframes tmType{0%{opacity:0}35%{opacity:1}55%{opacity:.2}75%{opacity:1}100%{opacity:1}}
+
+/* Paragraphs: soft focus-pull, like a lens finding focus */
+.tm-focus{transition:opacity 1.1s ease,filter 1.1s ease,transform 1.1s cubic-bezier(.2,.75,.1,1)}
+.tm-on .tm-focus:not(.tm-in){opacity:0;filter:blur(8px);transform:translateY(16px)}
+
+/* Staggered groups (stats, tags, info rows, award cards) */
+.tm-on .tm-stagger:not(.tm-in) > *{opacity:0}
+.tm-stagger.tm-in > *{animation:tmUp .8s cubic-bezier(.2,.75,.1,1) var(--d,0ms) both}
+@keyframes tmUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+/* Brand: letters rise on load, wave on hover */
+.bc{display:inline-block}
+.tcw{white-space:nowrap}
+.brand b span{font:inherit;letter-spacing:inherit;color:inherit;text-transform:none}
+.tm-on .brand:not(.tm-loaded) .bc{animation:tmRise .9s cubic-bezier(.2,.75,.1,1) var(--d,0ms) both}
+@media (hover:hover){.brand.tm-loaded:hover .bc{animation:tmWave .55s ease var(--d,0ms)}}
+@keyframes tmRise{from{opacity:0;transform:translateY(60%) rotate(8deg)}to{opacity:1;transform:none}}
+@keyframes tmWave{40%{transform:translateY(-22%)}100%{transform:none}}
+
+/* Buttons: label rolls letter by letter on hover */
+.tm-roll{display:inline-block;overflow:hidden;line-height:1.3;height:1.3em;white-space:pre}
+.tm-roll .rc{display:inline-block;text-shadow:0 1.3em currentColor;transition:transform .5s cubic-bezier(.65,0,.25,1) var(--d,0ms)}
+@media (hover:hover){
+  .btn:hover .tm-roll .rc,.links .book:hover .tm-roll .rc,.svc-cta:hover .tm-roll .rc{transform:translateY(-1.3em)}
+  .btn > span[aria-hidden="true"]{display:inline-block;transition:transform .35s cubic-bezier(.2,.75,.1,1)}
+  .btn:hover > span[aria-hidden="true"]{transform:translateX(4px)}
+  .btn.sq svg{transition:transform .45s cubic-bezier(.3,1.6,.5,1)}
+  .btn.sq:hover svg{transform:scale(1.16) rotate(-8deg)}
+}
+
+/* Nav + footer links: underline draws in */
+@media (min-width:901px){
+  .links a:not(.book){background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;padding-bottom:3px;transition:opacity .2s,color .2s,background-size .4s cubic-bezier(.2,.75,.1,1)}
+  .links a:not(.book):hover,.links a[aria-current="page"]{background-size:100% 1px}
+}
+.foot nav a{background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;padding-bottom:2px;transition:color .2s,background-size .4s cubic-bezier(.2,.75,.1,1)}
+.foot nav a:hover{background-size:100% 1px}
+/* Mobile menu items slide in one after another */
+@media (max-width:900px){.nav.open .links a{animation:tmUp .5s cubic-bezier(.2,.75,.1,1) var(--d,0ms) both}}
+
+/* Journey: outlined year fills with colour when its milestone lights up */
+.ms-year{background:linear-gradient(90deg,var(--amber) 50%,transparent 50%) 100% 0/200% 100% no-repeat;-webkit-background-clip:text;background-clip:text;transition:background-position 1.4s cubic-bezier(.2,.75,.1,1)}
+.ms.lit .ms-year{background-position:0 0}
+.big-year.tm-flip{animation:tmFlip .7s cubic-bezier(.2,.75,.1,1)}
+@keyframes tmFlip{from{opacity:0;transform:translateY(6%) scale(.98);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+.marq:hover .marq-track{animation-play-state:paused}
+
+@media (prefers-reduced-motion:reduce){
+  .tm-words em .tw-i{background:none;color:inherit;-webkit-text-fill-color:currentColor}
+}
 </style>
 </head>
 <body>
 <div class="grain" aria-hidden="true"></div>
 <header class="nav" id="nav">
   <div class="wrap nav-in">
-    <a href="#top" class="brand" aria-label="Shiva Ram, home"><b>Shivaram</b><em>Studio's</em></a>
+    <a href="#top" class="brand" aria-label="Shiva Ram, home"><b>ShivaRam</b></a>
     <nav class="links" id="links">
       <a href="#work">Work</a>
       <a href="#services" hidden>Services</a>
@@ -664,7 +733,7 @@ Our approach is simple: understand the story, find the perfect light, capture au
 
 <footer>
   <div class="wrap foot">
-    <span>© <span id="yr">2026</span> Shivaram Studio's</span>
+    <span>© <span id="yr">2026</span> ShivaRam Photography</span>
     <nav><a href="#work">Work</a><a href="https://www.youtube.com/@shivaramstudio5955" target="_blank" rel="noopener">YouTube</a><a href="https://wa.me/919849056548?text=Hi%20Shivaram%20Studio%2C%20I%27d%20like%20to%20enquire%20about%20a%20shoot." target="_blank" rel="noopener">WhatsApp</a><a href="#services" hidden>Services</a><a href="#about">About</a><a href="https://www.instagram.com/shivaram.studio?exln=MTViNjJ6Y3pjbXpoOQ==" target="_blank" rel="noopener">Instagram</a></nav>
     <span>Warangal · IN</span>
   </div>
@@ -1314,6 +1383,157 @@ $("#form").addEventListener("submit", async e => {
 });
 
 $("#yr").textContent = new Date().getFullYear();
+</script>
+
+<script>
+/* ===== TEXT MOTION ===== */
+(() => {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+  const root = document.documentElement;
+  const all = s => [...document.querySelectorAll(s)];
+
+  const walkText = (node, fn) => {
+    [...node.childNodes].forEach(n => {
+      if (n.nodeType === 3) fn(n);
+      else if (n.nodeType === 1 && !/^(SVG|SCRIPT|STYLE|SUP|BR)$/i.test(n.tagName)) walkText(n, fn);
+    });
+  };
+
+  const splitWords = el => {
+    let i = 0;
+    walkText(el, t => {
+      const parts = t.textContent.split(/(\s+)/);
+      if (!parts.some(p => p.trim())) return;
+      const frag = document.createDocumentFragment();
+      parts.forEach(p => {
+        if (!p) return;
+        if (!p.trim()) { frag.append(p); return; }
+        const o = document.createElement("span"), w = document.createElement("span");
+        o.className = "tw"; w.className = "tw-i"; w.textContent = p;
+        w.dataset.i = i++;
+        o.append(w); frag.append(o);
+      });
+      t.replaceWith(frag);
+    });
+    const step = Math.min(75, 900 / Math.max(i, 1));
+    el.querySelectorAll(".tw-i").forEach(w => w.style.setProperty("--d", Math.round(w.dataset.i * step) + "ms"));
+    el.classList.add("tm-words");
+  };
+
+  const splitChars = (el, cls, maxTotal, per) => {
+    let i = 0;
+    walkText(el, t => {
+      const frag = document.createDocumentFragment();
+      t.textContent.split(/(\s+)/).forEach(word => {
+        if (!word) return;
+        if (!word.trim()) { frag.append(word); return; }
+        const w = document.createElement("span");
+        w.className = "tcw";
+        [...word].forEach(c => {
+          const s = document.createElement("span");
+          s.className = cls; s.textContent = c; s.dataset.i = i++;
+          w.append(s);
+        });
+        frag.append(w);
+      });
+      t.replaceWith(frag);
+    });
+    const step = Math.min(per, maxTotal / Math.max(i, 1));
+    el.querySelectorAll("." + cls).forEach(s => s.style.setProperty("--d", Math.round(s.dataset.i * step) + "ms"));
+    return i;
+  };
+
+  const io = new IntersectionObserver(es => es.forEach(en => {
+    if (!en.isIntersecting) return;
+    const n = en.target;
+    setTimeout(() => n.classList.add("tm-in"), +(n.dataset.tmDelay || 0));
+    io.unobserve(n);
+  }), {rootMargin:"0px 0px -8% 0px", threshold:.15});
+
+  /* headings */
+  all("h2, .studio h3, .ms h3, .rec h3, .hint b").forEach(h => {
+    if (h.closest("[hidden]")) return;
+    splitWords(h);
+    io.observe(h);
+  });
+
+  /* eyebrow labels */
+  all(".eyebrow, .ms-meta, .rec .k > span").forEach(e => {
+    if (e.closest("[hidden]") || e.closest(".tm-type")) return;
+    splitChars(e, "tc", 1100, 30);
+    e.classList.add("tm-type");
+    io.observe(e);
+  });
+
+  /* paragraphs */
+  all(".head p.lead, .about-copy > p, .jhero-side p, .ms-copy > p, .rec p, .next > p, .studio p, .hero-side p").forEach(p => {
+    if (p.closest("[hidden]") || !p.textContent.trim()) return;
+    p.classList.add("tm-focus");
+    p.dataset.tmDelay = 120;
+    io.observe(p);
+  });
+
+  /* staggered groups */
+  all(".stats, .tags, .info, .rec-grid, .about-cta, .soc, .next .row").forEach(g => {
+    if (g.closest("[hidden]") || g.closest(".hero-copy")) return;
+    const kids = [...g.children];
+    if (!kids.length) return;
+    const step = Math.min(110, 700 / kids.length);
+    kids.forEach((k, i) => k.style.setProperty("--d", Math.round(i * step) + "ms"));
+    g.classList.add("tm-stagger");
+    io.observe(g);
+  });
+
+  /* brand letters */
+  all(".brand b").forEach(b => {
+    const n = splitChars(b, "bc", 600, 45);
+    const brand = b.closest(".brand");
+    setTimeout(() => brand.classList.add("tm-loaded"), 1100 + n * 45);
+  });
+
+  /* button label roll */
+  all(".btn:not(.sq), .links .book, .svc-cta").forEach(btn => {
+    const t = [...btn.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
+    if (!t) return;
+    const label = t.textContent.trim();
+    const wrap = document.createElement("span");
+    wrap.className = "tm-roll";
+    [...label].forEach((c, i) => {
+      const s = document.createElement("span");
+      s.className = "rc"; s.textContent = c;
+      s.style.setProperty("--d", i * 14 + "ms");
+      wrap.append(s);
+    });
+    if (!btn.hasAttribute("aria-label")) btn.setAttribute("aria-label", btn.textContent.replace(/\s+/g, " ").replace(/[→←]/g, "").trim());
+    t.replaceWith(wrap, " ");
+  });
+
+  /* mobile menu stagger */
+  all("#links a").forEach((a, i) => a.style.setProperty("--d", i * 45 + "ms"));
+
+  /* journey: count up milestone stats */
+  const cio = new IntersectionObserver(es => es.forEach(en => {
+    if (!en.isIntersecting) return;
+    const b = en.target, m = b.dataset.tmCount.match(/^(\d+)(.*)$/), end = +m[1], suf = m[2], t0 = performance.now();
+    const run = t => { const k = Math.min((t - t0) / 1400, 1); b.textContent = Math.round(end * (1 - Math.pow(1 - k, 3))) + suf; if (k < 1) requestAnimationFrame(run); };
+    requestAnimationFrame(run); cio.unobserve(b);
+  }), {threshold:.6});
+  all(".ms-stat b").forEach(b => {
+    const m = b.textContent.trim().match(/^(\d+)(.*)$/);
+    if (!m || +m[1] < 10) return;
+    b.dataset.tmCount = b.textContent.trim();
+    b.textContent = "0" + m[2];
+    cio.observe(b);
+  });
+
+  /* journey: big background year flips when it changes */
+  const big = document.getElementById("bigYear");
+  if (big) new MutationObserver(() => {
+    big.classList.remove("tm-flip"); void big.offsetWidth; big.classList.add("tm-flip");
+  }).observe(big, {childList:true, characterData:true, subtree:true});
+
+  root.classList.add("tm-on");
+})();
 </script>
 </body>
 </html>
