@@ -211,7 +211,7 @@ footer{border-top:1px solid var(--line);padding-block:32px}
   .ms:not(:nth-child(even)) .tags,.ms:not(:nth-child(even)) .ms-stat{justify-content:flex-start}
   .ms-dot{align-self:start;margin-top:18px}
 }
-@media (prefers-reduced-motion:reduce){
+@media (prefers-reduced-motion:reduce) and (max-width:0px){
   *,*::before,*::after{animation:none!important;transition:none!important}
   html{scroll-behavior:auto}
 }
@@ -312,13 +312,60 @@ footer{border-top:1px solid var(--line);padding-block:32px}
 @keyframes tmFlip{from{opacity:0;transform:translateY(6%) scale(.98);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
 .marq:hover .marq-track{animation-play-state:paused}
 
-@media (prefers-reduced-motion:reduce){
+@media (prefers-reduced-motion:reduce) and (max-width:0px){
   .tm-words em .tw-i{background:none;color:inherit;-webkit-text-fill-color:currentColor}
 }
 
 /* ===== CREDIT WATERMARK ===== */
 .credit{max-width:var(--max);margin:22px auto 0;padding:18px var(--gutter) 0;border-top:1px dashed var(--line);text-align:center;font-family:var(--mono);font-weight:500;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);opacity:.75}
 .credit b{font-weight:600;color:var(--paper)}
+
+/* ===== TEXT MOTION · BOOST (stronger, more visible) ===== */
+.tm-on .tm-words:not(.tm-in) .tw-i{transform:translateY(120%) rotate(8deg) scale(.9);opacity:0;filter:blur(6px)}
+.tw-i{transition:transform 1.2s cubic-bezier(.16,.9,.1,1) var(--d,0ms),opacity .9s ease var(--d,0ms),filter 1s ease var(--d,0ms)}
+/* accent words keep shining every few seconds */
+.tm-words.tm-in em .tw-i{animation:tmShine 1.8s cubic-bezier(.4,0,.2,1) calc(var(--d,0ms) + .9s) both,tmShineLoop 5.5s ease-in-out calc(var(--d,0ms) + 3.5s) infinite}
+@keyframes tmShineLoop{0%,55%{background-position:100% 0}100%{background-position:0 0}}
+
+/* eyebrow: a line draws in first, then letters type */
+.tm-type.eyebrow::before{content:"";display:inline-block;vertical-align:middle;height:1.5px;width:0;margin-right:0;background:currentColor;transition:width .7s cubic-bezier(.2,.75,.1,1),margin .7s}
+.tm-type.eyebrow.tm-in::before{width:30px;margin-right:12px}
+.tm-type.tm-in .tc{animation:tmType2 .5s cubic-bezier(.2,.75,.1,1) calc(var(--d,0ms) + .25s) both}
+@keyframes tmType2{0%{opacity:0;transform:translateY(-60%);filter:blur(3px)}50%{opacity:1}70%{opacity:.35}100%{opacity:1;transform:none;filter:none}}
+
+/* paragraphs: deeper focus-pull */
+.tm-focus{transition:opacity 1.3s ease,filter 1.3s ease,transform 1.3s cubic-bezier(.16,.9,.1,1)}
+.tm-on .tm-focus:not(.tm-in){opacity:0;filter:blur(14px);transform:translateY(34px)}
+
+/* groups: bigger lift + scale */
+@keyframes tmUp{from{opacity:0;transform:translateY(40px) scale(.94)}to{opacity:1;transform:none}}
+
+/* photos & cards: wipe open like a shutter */
+.tm-on .tm-wipe:not(.tm-in){clip-path:inset(100% 0 0 0)}
+.tm-wipe.tm-in{animation:tmWipe 1.3s cubic-bezier(.7,0,.2,1) backwards}
+@keyframes tmWipe{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0 0 0 0)}}
+.tm-wipe.tm-in img{animation:tmZoom 1.8s cubic-bezier(.2,.75,.1,1) backwards}
+@keyframes tmZoom{from{transform:scale(1.25)}to{transform:none}}
+
+/* scroll progress bar */
+.tm-prog{position:fixed;top:0;left:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--amber-deep,var(--paper)),var(--paper));z-index:120;pointer-events:none}
+
+/* custom cursor (desktop only) */
+.tm-cur{position:fixed;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border:1.5px solid var(--paper);border-radius:50%;pointer-events:none;z-index:130;display:grid;place-items:center;font:600 9px/1 var(--body);letter-spacing:.16em;color:#fff;text-transform:uppercase;transition:width .3s,height .3s,margin .3s,background .3s,border-color .3s,opacity .3s;opacity:0}
+.tm-cur.on{opacity:1}
+.tm-cur.link{width:56px;height:56px;margin:-28px 0 0 -28px;background:rgba(28,74,147,.12)}
+.tm-cur.view{width:86px;height:86px;margin:-43px 0 0 -43px;background:var(--paper);border-color:var(--paper)}
+.tm-cur span{opacity:0;transition:opacity .2s}
+.tm-cur.view span{opacity:1}
+.tm-dot{position:fixed;left:0;top:0;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--paper);pointer-events:none;z-index:131;opacity:0;transition:opacity .3s}
+.tm-dot.on{opacity:1}
+@media (hover:none),(pointer:coarse){.tm-cur,.tm-dot{display:none}}
+
+/* hover lift on cards */
+@media (hover:hover){
+  .rec,.step{transition:background .3s,transform .45s cubic-bezier(.2,.75,.1,1),box-shadow .45s}
+  .rec:hover,.step:hover{transform:translateY(-6px);box-shadow:0 18px 40px -22px rgba(28,74,147,.45)}
+}
 </style>
 </head>
 <body>
@@ -426,11 +473,7 @@ footer{border-top:1px solid var(--line);padding-block:32px}
     <nav><a href="index.html#work">Work</a><a href="index.html#services" hidden>Services</a><a href="journey.html">Journey</a><a href="https://www.instagram.com/shivaram.studio?exln=MTViNjJ6Y3pjbXpoOQ==" target="_blank" rel="noopener">Instagram</a><a href="https://www.youtube.com/@shivaramstudio5955" target="_blank" rel="noopener">YouTube</a><a href="https://wa.me/919849056548?text=Hi%20Shivaram%20Studio%2C%20I%27d%20like%20to%20enquire%20about%20a%20shoot." target="_blank" rel="noopener">WhatsApp</a></nav>
     <span>Warangal · IN</span>
   </div>
-  <div class="credit">
-  <a href="https://pixelostudiomedia.vercel.app/" target="_blank" rel="noopener noreferrer">
-    Designed by <b>Pixelomedia</b>
-  </a>
-</div>
+  <div class="credit">Designed by <b>Pixelomedia</b></div>
 </footer>
 
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
@@ -503,7 +546,7 @@ const CLIENTS = ["Client one","Local café","Wedding studio","Brand name","Resta
 /* ═══════════════════════════════════════════════════════════ */
 
 const $ = s => document.querySelector(s);
-const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const still = false /* animations always on (client request) */;
 
 /* nav */
 const nav = $("#nav");
@@ -661,7 +704,7 @@ $("#yr").textContent = new Date().getFullYear();
 <script>
 /* ===== TEXT MOTION ===== */
 (() => {
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+  if (false /* animations always on (client request) */ || !("IntersectionObserver" in window)) return;
   const root = document.documentElement;
   const all = s => [...document.querySelectorAll(s)];
 
@@ -806,6 +849,75 @@ $("#yr").textContent = new Date().getFullYear();
   }).observe(big, {childList:true, characterData:true, subtree:true});
 
   root.classList.add("tm-on");
+})();
+</script>
+
+<script>
+/* ===== TEXT MOTION · BOOST ===== */
+(() => {
+  if (!("IntersectionObserver" in window)) return;
+  const all = s => [...document.querySelectorAll(s)];
+
+  /* photo / card shutter wipe */
+  const watch = new Map();
+  const io = new IntersectionObserver(es => es.forEach(en => {
+    if (!en.isIntersecting) return;
+    (watch.get(en.target) || []).forEach(el => el.classList.add("tm-in"));
+    io.unobserve(en.target);
+  }), {rootMargin:"0px 0px -8% 0px", threshold:.05});
+  all(".portrait, .map, .oc-card").forEach(el => {
+    if (el.closest("[hidden]")) return;
+    el.classList.add("tm-wipe");
+    const host = el.parentElement;
+    if (!watch.has(host)) { watch.set(host, []); io.observe(host); }
+    watch.get(host).push(el);
+  });
+
+  /* scroll progress bar */
+  const bar = document.createElement("div"); bar.className = "tm-prog"; document.body.append(bar);
+  const prog = () => { const h = document.documentElement.scrollHeight - innerHeight; bar.style.transform = `scaleX(${h > 0 ? scrollY / h : 0})`; };
+  addEventListener("scroll", prog, {passive:true}); addEventListener("resize", prog); prog();
+
+  const fine = matchMedia("(hover:hover) and (pointer:fine)").matches;
+  if (!fine) return;
+
+  /* custom cursor */
+  const cur = document.createElement("div"); cur.className = "tm-cur"; cur.innerHTML = "<span>View</span>";
+  const dot = document.createElement("div"); dot.className = "tm-dot";
+  document.body.append(cur, dot);
+  let mx = -100, my = -100, cx = -100, cy = -100;
+  addEventListener("mousemove", e => {
+    mx = e.clientX; my = e.clientY;
+    dot.style.transform = `translate(${mx}px,${my}px)`;
+    cur.classList.add("on"); dot.classList.add("on");
+    const t = e.target.closest ? e.target : null;
+    const img = t && t.closest(".frame, .oc-card, .shot, .portrait, figure");
+    const link = t && t.closest("a, button, [role=button], .chip, input, textarea, select, label");
+    cur.classList.toggle("view", !!img && !link);
+    cur.classList.toggle("link", !!link);
+  }, {passive:true});
+  document.addEventListener("mouseleave", () => { cur.classList.remove("on"); dot.classList.remove("on"); });
+  (function loop(){
+    cx += (mx - cx) * .18; cy += (my - cy) * .18;
+    cur.style.transform = `translate(${cx}px,${cy}px)`;
+    requestAnimationFrame(loop);
+  })();
+
+  /* magnetic buttons */
+  all(".btn, .links .book").forEach(b => {
+    let tx = 0, ty = 0, x = 0, y = 0, raf = 0;
+    const tick = () => {
+      x += (tx - x) * .2; y += (ty - y) * .2;
+      b.style.translate = `${x.toFixed(2)}px ${y.toFixed(2)}px`;
+      if (Math.abs(tx - x) > .05 || Math.abs(ty - y) > .05) raf = requestAnimationFrame(tick); else raf = 0;
+    };
+    const go = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    b.addEventListener("mousemove", e => {
+      const r = b.getBoundingClientRect();
+      tx = (e.clientX - r.left - r.width / 2) * .28; ty = (e.clientY - r.top - r.height / 2) * .38; go();
+    });
+    b.addEventListener("mouseleave", () => { tx = 0; ty = 0; go(); });
+  });
 })();
 </script>
 </body>
